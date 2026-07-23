@@ -23,6 +23,8 @@ interface TeamContextValue {
   isInTeam: (id: number) => boolean;
   /** Adiciona se houver vaga, remove se já estiver no time. */
   toggleTeamMember: (pokemon: Pokemon) => ToggleTeamResult;
+  /** Esvazia o time de uma vez. */
+  clearTeam: () => void;
 }
 
 const TeamContext = createContext<TeamContextValue | null>(null);
@@ -94,13 +96,16 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     return 'adicionado';
   }, []);
 
+  const clearTeam = useCallback(() => setTeam([]), []);
+
   const value = useMemo<TeamContextValue>(
     () => ({
       team,
       isInTeam,
       toggleTeamMember,
+      clearTeam,
     }),
-    [team, isInTeam, toggleTeamMember],
+    [team, isInTeam, toggleTeamMember, clearTeam],
   );
 
   return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;

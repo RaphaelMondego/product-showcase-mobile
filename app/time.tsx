@@ -1,15 +1,16 @@
 import { Stack, useRouter } from 'expo-router';
 import { useCallback } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { PokemonCard } from '../src/components/PokemonCard';
 import { MAX_TEAM_SIZE, useTeam } from '../src/contexts/TeamContext';
 import { colors, fontSize, spacing } from '../src/theme';
 import type { Pokemon } from '../src/types/pokemon';
+import { confirmAction } from '../src/utils/notify';
 
 export default function TeamScreen() {
   const router = useRouter();
-  const { team, isInTeam, toggleTeamMember } = useTeam();
+  const { team, isInTeam, toggleTeamMember, clearTeam } = useTeam();
 
   const openDetails = useCallback(
     (selected: Pokemon) => {
@@ -18,9 +19,34 @@ export default function TeamScreen() {
     [router],
   );
 
+  /** Esvaziar o time é destrutivo, então confirma antes de apagar tudo. */
+  const handleClearTeam = useCallback(() => {
+    confirmAction(
+      'Limpar time',
+      'Tem certeza que deseja remover todos os Pokémon do seu time?',
+      'Limpar',
+      clearTeam,
+    );
+  }, [clearTeam]);
+
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: `Meu time (${team.length}/${MAX_TEAM_SIZE})` }} />
+      <Stack.Screen
+        options={{
+          title: `Meu time (${team.length}/${MAX_TEAM_SIZE})`,
+          headerRight: () =>
+            team.length > 0 ? (
+              <Pressable
+                onPress={handleClearTeam}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Limpar todo o time"
+              >
+                <Text style={styles.clearButton}>Limpar</Text>
+              </Pressable>
+            ) : null,
+        }}
+      />
 
       <FlatList
         data={team}
@@ -79,5 +105,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     color: colors.textMuted,
     textAlign: 'center',
+  },
+  clearButton: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.danger,
   },
 });
