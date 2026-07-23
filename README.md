@@ -69,6 +69,18 @@ npm start
 Leia o QR Code exibido no terminal com o Expo Go, ou digite manualmente o
 endereço `exp://SEU_IP_LOCAL:8081` no aplicativo.
 
+### Testes
+
+```bash
+npm test
+```
+
+A suíte cobre `src/utils/pokemon.ts`, onde mora a extração do id a partir da url
+de detalhes — a peça de que depende a imagem de todos os cards da listagem.
+Além do caminho feliz, os testes verificam que a função **falha de forma
+explícita** diante de uma url inesperada, em vez de devolver um valor inválido
+que só apareceria como imagem quebrada na tela.
+
 ### Variáveis de ambiente
 
 **Nenhuma.** A PokeAPI é pública e não exige chave de acesso ou autenticação.
