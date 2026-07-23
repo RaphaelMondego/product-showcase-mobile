@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { PokemonNotFoundError } from '../services/errors';
 import { fetchPokemonByName } from '../services/pokemonService';
 import type { PokemonDetails } from '../types/pokemon';
 
@@ -32,8 +33,12 @@ export function usePokemonDetails(name: string | undefined): UsePokemonDetailsRe
 
     try {
       setDetails(await fetchPokemonByName(name));
-    } catch {
-      setError('Não foi possível carregar os detalhes deste Pokémon.');
+    } catch (loadError) {
+      setError(
+        loadError instanceof PokemonNotFoundError
+          ? `Não encontramos nenhum Pokémon chamado “${name}”.`
+          : 'Não foi possível carregar os detalhes deste Pokémon.',
+      );
     } finally {
       setIsLoading(false);
     }

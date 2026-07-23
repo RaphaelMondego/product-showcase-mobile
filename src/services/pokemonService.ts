@@ -1,4 +1,7 @@
+import axios from 'axios';
+
 import { api } from './api';
+import { PokemonNotFoundError } from './errors';
 import type { PokemonDetailResponse, PokemonListResponse } from '../types/pokeapi';
 import type { Pokemon, PokemonDetails } from '../types/pokemon';
 import { buildOfficialArtworkUrl, extractPokemonId } from '../utils/pokemon';
@@ -29,7 +32,21 @@ export async function fetchPokemonList(limit = POKEMON_LIST_LIMIT): Promise<Poke
 
 /** Busca os dados completos de um Pokémon pelo nome (usado na rota de detalhes). */
 export async function fetchPokemonByName(name: string): Promise<PokemonDetails> {
-  const { data } = await api.get<PokemonDetailResponse>(`/pokemon/${name}`);
+  let data: PokemonDetailResponse;
+
+  try {
+    ({ data } = await api.get<PokemonDetailResponse>(`/pokemon/${name}`));
+  } catch (requestError) {
+    /**
+     * A API responde 404 para nome inexistente. Traduzir esse caso para um erro
+     * próprio evita que a tela culpe a conexão por um nome errado.
+     */
+    if (axios.isAxiosError(requestError) && requestError.response?.status === 404) {
+      throw new PokemonNotFoundError(name);
+    }
+
+    throw requestError;
+  }
 
   return {
     id: data.id,
