@@ -1,5 +1,14 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
+import { readFromCache, StorageKeys, writeToCache } from '../services/storage';
 import type { Pokemon } from '../types/pokemon';
 
 /** Um time Pokémon tem seis integrantes — é a regra do jogo, e o limite do bônus. */
@@ -17,6 +26,36 @@ const TeamContext = createContext<TeamContextValue | null>(null);
 
 export function TeamProvider({ children }: { children: ReactNode }) {
   const [team, setTeam] = useState<Pokemon[]>([]);
+  /** Enquanto false, o time guardado no dispositivo ainda não foi lido. */
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  /** Restaura o time salvo na abertura do aplicativo. */
+  useEffect(() => {
+    async function restoreTeam() {
+      const saved = await readFromCache<Pokemon[]>(StorageKeys.team);
+
+      if (saved?.data?.length) {
+        setTeam(saved.data.slice(0, MAX_TEAM_SIZE));
+      }
+
+      setIsHydrated(true);
+    }
+
+    void restoreTeam();
+  }, []);
+
+  /**
+   * Salva a cada alteração — menos antes da restauração terminar.
+   * Sem essa guarda, o estado inicial vazio sobrescreveria no disco o time
+   * que acabou de ser lido, e os favoritos sumiriam a cada abertura.
+   */
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    void writeToCache(StorageKeys.team, team);
+  }, [team, isHydrated]);
 
   const isInTeam = useCallback(
     (id: number) => team.some((member) => member.id === id),
