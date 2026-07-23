@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, fontSize, radius, spacing } from '../theme';
@@ -25,6 +25,12 @@ function PokemonCardComponent({
   isFavorite,
   onToggleFavorite,
 }: PokemonCardProps) {
+  /**
+   * A imagem é montada a partir do id, então pode não existir para todos os
+   * casos. Se falhar, mostramos um espaço reservado em vez de um vão branco.
+   */
+  const [imageFailed, setImageFailed] = useState(false);
+
   return (
     <Pressable
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
@@ -33,11 +39,18 @@ function PokemonCardComponent({
       accessibilityLabel={`Ver detalhes de ${capitalize(pokemon.name)}`}
     >
       <View style={styles.imageWrapper}>
-        <Image
-          source={{ uri: pokemon.imageUrl }}
-          style={styles.image}
-          resizeMode="contain"
-        />
+        {imageFailed ? (
+          <View style={styles.imageFallback}>
+            <Text style={styles.imageFallbackText}>?</Text>
+          </View>
+        ) : (
+          <Image
+            source={{ uri: pokemon.imageUrl }}
+            style={styles.image}
+            resizeMode="contain"
+            onError={() => setImageFailed(true)}
+          />
+        )}
 
         <Pressable
           style={styles.favoriteButton}
@@ -102,6 +115,17 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  imageFallback: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageFallbackText: {
+    fontSize: fontSize.xxl,
+    color: colors.textMuted,
+    fontWeight: '700',
   },
   id: {
     fontSize: fontSize.sm,
