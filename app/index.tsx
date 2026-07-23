@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -11,7 +12,7 @@ import {
 
 import { ErrorState } from '../src/components/ErrorState';
 import { PokemonCard } from '../src/components/PokemonCard';
-import { useTeam } from '../src/contexts/TeamContext';
+import { MAX_TEAM_SIZE, useTeam } from '../src/contexts/TeamContext';
 import { usePokemonList } from '../src/hooks/usePokemonList';
 import { colors, fontSize, spacing } from '../src/theme';
 import type { Pokemon } from '../src/types/pokemon';
@@ -40,7 +41,23 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Pokédex' }} />
+      <Stack.Screen
+        options={{
+          title: 'Pokédex',
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push('/time')}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Abrir meu time"
+            >
+              <Text style={styles.teamBadge}>
+                ★ {team.length}/{MAX_TEAM_SIZE}
+              </Text>
+            </Pressable>
+          ),
+        }}
+      />
 
       {isLoading && (
         <View style={styles.centered}>
@@ -101,5 +118,10 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     color: colors.textMuted,
     textAlign: 'center',
+  },
+  teamBadge: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.favorite,
   },
 });
