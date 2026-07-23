@@ -41,3 +41,6 @@ yarn-error.*
 /android
 
 .claude/
+
+# build web gerado para o GitHub Pages
+dist-web/
