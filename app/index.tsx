@@ -2,7 +2,6 @@ import { Stack, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -19,6 +18,7 @@ import { MAX_TEAM_SIZE, useTeam } from '../src/contexts/TeamContext';
 import { usePokemonList } from '../src/hooks/usePokemonList';
 import { colors, fontSize, spacing } from '../src/theme';
 import type { Pokemon } from '../src/types/pokemon';
+import { notify } from '../src/utils/notify';
 
 /**
  * Largura mínima confortável para um card. O número de colunas é derivado
@@ -66,7 +66,7 @@ export default function HomeScreen() {
   const handleToggleFavorite = useCallback(
     (selected: Pokemon) => {
       if (toggleTeamMember(selected) === 'time-cheio') {
-        Alert.alert(
+        notify(
           'Time completo',
           `Seu time já tem ${MAX_TEAM_SIZE} Pokémon. Remova um antes de adicionar outro.`,
         );
