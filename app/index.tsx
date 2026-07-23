@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -28,7 +29,7 @@ const MIN_CARD_WIDTH = 160;
 export default function HomeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const { pokemon, isLoading, error, reload } = usePokemonList();
+  const { pokemon, isLoading, isRefreshing, error, reload, refresh } = usePokemonList();
   const { team, isInTeam, toggleTeamMember } = useTeam();
 
   const [search, setSearch] = useState('');
@@ -56,6 +57,7 @@ export default function HomeScreen() {
     },
     [router],
   );
+
 
   return (
     <View style={styles.container}>
@@ -111,6 +113,15 @@ export default function HomeScreen() {
           contentContainerStyle={styles.listContent}
           columnWrapperStyle={styles.row}
           keyboardShouldPersistTaps="handled"
+          /** Puxar para atualizar: força a busca na rede, ignorando o cache. */
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={refresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.feedbackText}>
