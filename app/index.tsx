@@ -2,6 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -58,6 +59,22 @@ export default function HomeScreen() {
     [router],
   );
 
+  /**
+   * Recusar a adição em silêncio deixa o usuário sem saber se o toque falhou
+   * ou se existe um limite. O aviso explica a regra e sugere a saída.
+   */
+  const handleToggleFavorite = useCallback(
+    (selected: Pokemon) => {
+      if (toggleTeamMember(selected) === 'time-cheio') {
+        Alert.alert(
+          'Time completo',
+          `Seu time já tem ${MAX_TEAM_SIZE} Pokémon. Remova um antes de adicionar outro.`,
+        );
+      }
+    },
+    [toggleTeamMember],
+  );
+
 
   return (
     <View style={styles.container}>
@@ -105,7 +122,7 @@ export default function HomeScreen() {
               pokemon={item}
               onPress={openDetails}
               isFavorite={isInTeam(item.id)}
-              onToggleFavorite={toggleTeamMember}
+              onToggleFavorite={handleToggleFavorite}
             />
           )}
           /** Sem isto a FlatList não sabe que as estrelas mudaram. */

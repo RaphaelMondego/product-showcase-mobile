@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -14,11 +15,14 @@ import type { Pokemon } from '../types/pokemon';
 /** Um time Pokémon tem seis integrantes — é a regra do jogo, e o limite do bônus. */
 export const MAX_TEAM_SIZE = 6;
 
+/** O que aconteceu na tentativa — permite à tela avisar o usuário. */
+export type ToggleTeamResult = 'adicionado' | 'removido' | 'time-cheio';
+
 interface TeamContextValue {
   team: Pokemon[];
   isInTeam: (id: number) => boolean;
   /** Adiciona se houver vaga, remove se já estiver no time. */
-  toggleTeamMember: (pokemon: Pokemon) => void;
+  toggleTeamMember: (pokemon: Pokemon) => ToggleTeamResult;
   isFull: boolean;
 }
 
@@ -62,21 +66,33 @@ export function TeamProvider({ children }: { children: ReactNode }) {
     [team],
   );
 
-  const toggleTeamMember = useCallback((pokemon: Pokemon) => {
-    setTeam((current) => {
-      const alreadyInTeam = current.some((member) => member.id === pokemon.id);
+  /**
+   * Espelho do time atualizado durante a renderização.
+   *
+   * É o que permite ao toggleTeamMember ler o time mais recente sem declará-lo
+   * como dependência. Se ele dependesse de `team`, sua identidade mudaria a
+   * cada favoritada, o memo dos cards deixaria de valer e os 151 voltariam a
+   * re-renderizar juntos.
+   */
+  const teamRef = useRef(team);
+  teamRef.current = team;
 
-      if (alreadyInTeam) {
-        return current.filter((member) => member.id !== pokemon.id);
-      }
+  const toggleTeamMember = useCallback((pokemon: Pokemon): ToggleTeamResult => {
+    const current = teamRef.current;
+    const alreadyInTeam = current.some((member) => member.id === pokemon.id);
 
-      /** Time cheio: ignora a adição em vez de derrubar alguém sem avisar. */
-      if (current.length >= MAX_TEAM_SIZE) {
-        return current;
-      }
+    if (alreadyInTeam) {
+      setTeam(current.filter((member) => member.id !== pokemon.id));
+      return 'removido';
+    }
 
-      return [...current, pokemon];
-    });
+    /** Time cheio: recusa a adição em vez de derrubar alguém sem avisar. */
+    if (current.length >= MAX_TEAM_SIZE) {
+      return 'time-cheio';
+    }
+
+    setTeam([...current, pokemon]);
+    return 'adicionado';
   }, []);
 
   const value = useMemo<TeamContextValue>(
