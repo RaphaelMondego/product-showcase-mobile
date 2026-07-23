@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 
+import { ErrorState } from '../../src/components/ErrorState';
 import { usePokemonDetails } from '../../src/hooks/usePokemonDetails';
 import {
   colors,
@@ -22,7 +23,7 @@ import { capitalize } from '../../src/utils/pokemon';
 export default function PokemonDetailsScreen() {
   /** O nome vem do próprio nome do arquivo: [name].tsx -> params.name */
   const { name } = useLocalSearchParams<{ name: string }>();
-  const { details, isLoading, error } = usePokemonDetails(name);
+  const { details, isLoading, error, reload } = usePokemonDetails(name);
 
   const title = name ? capitalize(name) : 'Detalhes';
 
@@ -39,7 +40,7 @@ export default function PokemonDetailsScreen() {
     return (
       <View style={styles.centered}>
         <Stack.Screen options={{ title }} />
-        <Text style={styles.errorText}>{error ?? 'Pokémon não encontrado.'}</Text>
+        <ErrorState message={error ?? 'Pokémon não encontrado.'} onRetry={reload} />
       </View>
     );
   }
@@ -176,10 +177,5 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     fontWeight: '700',
     color: colors.text,
-  },
-  errorText: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-    textAlign: 'center',
   },
 });

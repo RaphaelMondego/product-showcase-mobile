@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 
+import { ErrorState } from '../src/components/ErrorState';
 import { PokemonCard } from '../src/components/PokemonCard';
 import { usePokemonList } from '../src/hooks/usePokemonList';
 import { colors, fontSize, spacing } from '../src/theme';
@@ -24,7 +25,7 @@ const MIN_CARD_WIDTH = 160;
 export default function HomeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const { pokemon, isLoading, error } = usePokemonList();
+  const { pokemon, isLoading, error, reload } = usePokemonList();
 
   const numColumns = Math.max(2, Math.floor(width / MIN_CARD_WIDTH));
 
@@ -39,12 +40,16 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ title: 'Pokédex' }} />
 
-      {isLoading ? (
+      {isLoading && (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.feedbackText}>Carregando Pokémon...</Text>
         </View>
-      ) : (
+      )}
+
+      {!isLoading && error && <ErrorState message={error} onRetry={reload} />}
+
+      {!isLoading && !error && (
         <FlatList
           data={pokemon}
           /**
@@ -57,9 +62,6 @@ export default function HomeScreen() {
           renderItem={({ item }) => <PokemonCard pokemon={item} onPress={openDetails} />}
           contentContainerStyle={styles.listContent}
           columnWrapperStyle={styles.row}
-          ListEmptyComponent={
-            error ? <Text style={styles.feedbackText}>{error}</Text> : null
-          }
         />
       )}
     </View>
