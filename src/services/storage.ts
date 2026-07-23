@@ -56,11 +56,3 @@ export async function writeToCache<T>(key: string, data: T): Promise<void> {
      */
   }
 }
-
-export async function removeFromCache(key: string): Promise<void> {
-  try {
-    await AsyncStorage.removeItem(key);
-  } catch {
-    /* mesmo raciocínio do writeToCache */
-  }
-}

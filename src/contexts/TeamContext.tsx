@@ -23,7 +23,6 @@ interface TeamContextValue {
   isInTeam: (id: number) => boolean;
   /** Adiciona se houver vaga, remove se já estiver no time. */
   toggleTeamMember: (pokemon: Pokemon) => ToggleTeamResult;
-  isFull: boolean;
 }
 
 const TeamContext = createContext<TeamContextValue | null>(null);
@@ -100,7 +99,6 @@ export function TeamProvider({ children }: { children: ReactNode }) {
       team,
       isInTeam,
       toggleTeamMember,
-      isFull: team.length >= MAX_TEAM_SIZE,
     }),
     [team, isInTeam, toggleTeamMember],
   );
