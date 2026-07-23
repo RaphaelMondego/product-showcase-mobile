@@ -14,6 +14,7 @@ export const colors = {
   textMuted: '#6E6E73',
   border: '#E2E2E7',
   danger: '#C1121F',
+  favorite: '#F2B705',
   white: '#FFFFFF',
 } as const;
 

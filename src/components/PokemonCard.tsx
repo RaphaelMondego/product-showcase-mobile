@@ -8,10 +8,23 @@ import { capitalize } from '../utils/pokemon';
 interface PokemonCardProps {
   pokemon: Pokemon;
   onPress: (pokemon: Pokemon) => void;
+  isFavorite: boolean;
+  onToggleFavorite: (pokemon: Pokemon) => void;
 }
 
-/** Card da listagem. Memoizado porque a Home renderiza 151 deles. */
-function PokemonCardComponent({ pokemon, onPress }: PokemonCardProps) {
+/**
+ * Card da listagem. Memoizado porque a Home renderiza 151 deles.
+ *
+ * `isFavorite` chega por prop em vez de o card ler o contexto direto: se cada
+ * card fosse consumidor do TeamContext, favoritar um Pokémon re-renderizaria
+ * os 151 de uma vez. Por prop, o memo compara e só o card afetado re-renderiza.
+ */
+function PokemonCardComponent({
+  pokemon,
+  onPress,
+  isFavorite,
+  onToggleFavorite,
+}: PokemonCardProps) {
   return (
     <Pressable
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
@@ -25,6 +38,23 @@ function PokemonCardComponent({ pokemon, onPress }: PokemonCardProps) {
           style={styles.image}
           resizeMode="contain"
         />
+
+        <Pressable
+          style={styles.favoriteButton}
+          onPress={() => onToggleFavorite(pokemon)}
+          /** Área de toque maior que o ícone, para não competir com o card. */
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isFavorite
+              ? `Remover ${capitalize(pokemon.name)} do time`
+              : `Adicionar ${capitalize(pokemon.name)} ao time`
+          }
+        >
+          <Text style={[styles.favoriteIcon, isFavorite && styles.favoriteIconActive]}>
+            {isFavorite ? '★' : '☆'}
+          </Text>
+        </Pressable>
       </View>
 
       <Text style={styles.id}>#{String(pokemon.id).padStart(3, '0')}</Text>
@@ -56,6 +86,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderRadius: radius.sm,
     marginBottom: spacing.sm,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
+  },
+  favoriteIcon: {
+    fontSize: fontSize.xl,
+    color: colors.textMuted,
+  },
+  favoriteIconActive: {
+    color: colors.favorite,
   },
   image: {
     width: '100%',

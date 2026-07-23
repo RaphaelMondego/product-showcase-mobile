@@ -11,6 +11,7 @@ import {
 
 import { ErrorState } from '../src/components/ErrorState';
 import { PokemonCard } from '../src/components/PokemonCard';
+import { useTeam } from '../src/contexts/TeamContext';
 import { usePokemonList } from '../src/hooks/usePokemonList';
 import { colors, fontSize, spacing } from '../src/theme';
 import type { Pokemon } from '../src/types/pokemon';
@@ -26,6 +27,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { pokemon, isLoading, error, reload } = usePokemonList();
+  const { team, isInTeam, toggleTeamMember } = useTeam();
 
   const numColumns = Math.max(2, Math.floor(width / MIN_CARD_WIDTH));
 
@@ -59,7 +61,16 @@ export default function HomeScreen() {
           key={numColumns}
           numColumns={numColumns}
           keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => <PokemonCard pokemon={item} onPress={openDetails} />}
+          renderItem={({ item }) => (
+            <PokemonCard
+              pokemon={item}
+              onPress={openDetails}
+              isFavorite={isInTeam(item.id)}
+              onToggleFavorite={toggleTeamMember}
+            />
+          )}
+          /** Sem isto a FlatList não sabe que as estrelas mudaram. */
+          extraData={team}
           contentContainerStyle={styles.listContent}
           columnWrapperStyle={styles.row}
         />
